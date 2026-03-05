@@ -1,143 +1,78 @@
-import React from 'react'
-import { useRef } from 'react'
-import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
-import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
-import { useLessonStore } from '@/lib/store/useLessonStore';
+import { Play, Brackets, Download } from 'lucide-react';
+import Link from 'next/link'
 
 interface ToolBarProps {
   lessonId: string;
-  onClear: () => void;
   onDownload: () => void;
-  onSave: () => void;
-  onAdd?: () => void;
   onRename: () => void;
+  onClear: () => void;
 }
 
-const ListItem = React.forwardRef<
-  React.ComponentRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { upload?: boolean; lessonId?: string }
->(({ className, title, children, upload, lessonId, ...props }, ref) => {
-
-  const inputRef = useRef<HTMLInputElement>(null);
-  const addFile = useLessonStore((state) => state.addFileToLesson)
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, lessonId: string) => {
-    console.log("file upload triggered")
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      const newFile = {
-        id: crypto.randomUUID(),
-        name: file.name,
-        content: content
-      }
-      addFile(lessonId, newFile)
-    }
-    reader.readAsText(file);
-  }
-
+const ToolBar = ({ lessonId, onDownload, onClear, onRename }: ToolBarProps) => {
   return (
-    <li>
-        {upload ? (
-          <div className='relative'>
-            <div
-              className={cn(
-                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none hover:bg-gray-700 transition-colors",
-                className
-              )}
-              onClick={() => inputRef.current?.click()}
-            >
-              <div className="text-sm font-medium leading-none text-gray-200">{title}</div>
-              <p className="line-clamp-2 text-sm leading-snug text-gray-400">
-                {children}
-              </p>
-            </div>
-            <input 
-              type="file" 
-              className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden"
-              ref={inputRef}
-              onChange={(e) => handleFileUpload(e, lessonId || "")}
-            />
-          </div>
-        ):(
-        <NavigationMenuLink asChild>
-          <a
-            ref={ref}
-            className={cn(
-              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none hover:bg-gray-700 transition-colors",
-              className
-            )}
-            {...props}
+    <div className='flex items-center justify-between pl-3 pr-4 py-2 text-sm text-white bg-[#21252b] border-b border-gray-900'>
+      <div className="flex items-center gap-1">
+        {/* Always Visible */}
+        <Button
+          variant="link"
+          className='text-white cursor-pointer border border-white h-8 px-2 text-xs mr-2'
+          asChild
+        >
+          <Link
+            href="/lessons"
           >
-            <div className="text-sm font-medium leading-none text-gray-200">{title}</div>
-            <p className="line-clamp-2 text-sm leading-snug text-gray-400">
-              {children}
-            </p>
-          </a>
-        </NavigationMenuLink>
-      )}
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"
+            {"< "} Back
+          </Link>
+        </Button>
+      </div>
 
-const ToolBar = ({ lessonId, onClear, onDownload, onSave, onAdd, onRename }: ToolBarProps) => {
-  return (
-    <div className='flex items-center justify-between px-6 py-2 text-sm text-white bg-[#21252b] border-b border-gray-900'>
-        <div className="flex items-center gap-2">
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem> 
-                  <NavigationMenuTrigger className="h-8 bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white data-[state=open]:bg-gray-700 focus:bg-gray-700">
-                    File
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent className="border-gray-700 bg-[#21252b]">
-                    <ul className="grid w-50 gap-1 p-2 bg-[#21252b] text-white border border-gray-700 rounded-md">
-                      <ListItem href="#" title="New File" onClick={onAdd} />
-                      <ListItem href="#" title="Open File" upload={true} lessonId={lessonId} />
-                      <ListItem href="#" title="Save" onClick={onSave} />
-                      <ListItem href="#" title="Download" onClick={onDownload} />
-                      <ListItem href="#" title="Rename" onClick={onRename} />
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+      {/* DESKTOP ACTION ITEMS: DOWNLOAD, RENAME */}
+      <div className="hidden min-[426px]:flex items-center gap-2">
+        <Button className='bg-transparent border border-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition-colors cursor-pointer h-8' onClick={onDownload}>
+          Download
+        </Button>
+        <Button className='bg-transparent border border-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition-colors cursor-pointer h-8' onClick={onRename}>
+          Rename
+        </Button>
+      </div>
 
-                {/* <NavigationMenuItem>
-                  <NavigationMenuTrigger className="h-8 bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white data-[state=open]:bg-gray-700 focus:bg-gray-700">
-                    Edit
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent className="border-gray-700 bg-[#21252b]">
-                    <ul className="grid w-[200px] gap-1 p-2 bg-[#21252b] text-white border border-gray-700 rounded-md">
-                      <ListItem href="#" title="Undo" />
-                      <ListItem href="#" title="Redo" />
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem> */}
-              </NavigationMenuList>
-            </NavigationMenu>
-        </div>
-        <div className="flex items-center gap-2 mr-4">
-            <Button className='bg-transparent border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition-colors cursor-pointer'
-            onClick={onClear}
-            >
-                Clear All
-            </Button>
-            <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer'
-            >
-                Run Code
-            </Button>
-        </div>
+      {/* MOBILE ACTION ITEMS: DOWNLOAD, RENAME */}
+      <div className="flex min-[426px]:hidden items-center gap-2">
+        <Button className='bg-transparent border border-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition-colors cursor-pointer h-8' onClick={onDownload}>
+          <Download size={16} />
+        </Button>
+        <Button className='bg-transparent border border-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition-colors cursor-pointer h-8' onClick={onRename}>
+          <Brackets size={16} />
+        </Button>
+      </div>
+
+      {/* DESKTOP ACTION BUTTONS: Hidden at 425px and below */}
+      <div className="hidden min-[426px]:flex items-center gap-2">
+        <Button 
+          className='bg-transparent border border-red-600 rounded-md hover:bg-red-600 
+                    hover:text-white transition-colors cursor-pointer h-8'
+          onClick={onClear}
+          >
+          Clear Code
+        </Button>
+        <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer h-8'>
+          Run Code
+        </Button>
+      </div>
+
+      {/* MOBILE ACTION BUTTONS: Visible at 425px and below */}
+      <div className="flex min-[426px]:hidden items-center gap-2">
+        <Button 
+            className='bg-transparent border border-red-600 rounded-md hover:bg-red-600 
+                          hover:text-white transition-colors cursor-pointer h-8'
+            onClick={onClear}>
+          Clear Code
+        </Button>
+        <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer h-8'>
+          <Play size={16} />
+        </Button>
+      </div>
     </div>
   )
 }

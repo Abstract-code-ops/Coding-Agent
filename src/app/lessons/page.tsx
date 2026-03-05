@@ -4,8 +4,8 @@ import AddLessonButton from '@/components/home/addLessonButton'
 
 export default function Page() {
   return (
-    <div className="h-screen p-4 flex flex-col items-center justify-start bg-gray-900">
-        <h1 className="text-4xl text-white font-bold my-4 pt-6">Your Lessons</h1>
+    <div className="h-full p-4 flex flex-col items-center justify-start bg-primary">
+        <h1 className="text-4xl text-white font-bold my-4 py-6">Your Lessons</h1>
         
         <LessonList />
         

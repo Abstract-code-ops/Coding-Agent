@@ -26,10 +26,10 @@ interface EditorProps {
 export default function Editor({ onChange, code }: EditorProps) {
 
   return (
-    <div className="">
+    <div className="h-full bg-[#21252b]">
       <CodeMirror
         value={code}
-        height="100vh"
+        height="100%"
         theme={oneDark}
         extensions={[
           python(),

@@ -34,6 +34,7 @@ export default function AddLessonButton() {
                 Add a Lesson
             </button>
             {showNameInput && (
+                // I will change this to a modal
                 <div className="mt-2">
                     <input 
                         type="text" 
