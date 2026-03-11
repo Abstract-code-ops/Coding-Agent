@@ -1,4 +1,4 @@
-import CodeEditorClientComponent from "@/components/editor/codeEditorClientComponent"
+import CodeEditorClientComponent from "@/components/lesson/editorUI/codeEditorClientComponent"
 export default function Home() {
 
   return (

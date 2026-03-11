@@ -4,11 +4,17 @@ import Editor from './editor'
 import Toolbar from './toolBar'
 import Tabs from './tabs'
 import { useLessonStore } from '@/lib/store/useLessonStore'
-import { RenameModal } from '../shared/renameModal'
-import { current } from 'immer'
+import { RenameModal } from '../../shared/renameModal'
 
 
-const CodeEditorClientComponent = ({ lessonId }: { lessonId: string}) => {
+declare global {
+  interface Window { loadPyodide: any; }
+}
+
+
+const CodeEditorClientComponent = ({ lessonId, setOutput }: { lessonId: string, setOutput: React.Dispatch<React.SetStateAction<string[]>> }) => {
+    
+    // lesson store definitions
     const currentLesson = useLessonStore((state) =>
         state.lessons.find(lesson => lesson.id === lessonId))
     const renameFile = useLessonStore((state) => state.renameFile)
@@ -16,6 +22,43 @@ const CodeEditorClientComponent = ({ lessonId }: { lessonId: string}) => {
 
     const [code, setCode] = useState(currentLesson?.content || "")
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+    const [isRunning, setIsRunning] = useState<boolean>(false)
+    const pyodideRef = useRef<any>(null);
+
+    const handleRunCode = async () => {
+        if (!currentLesson) return;
+
+        setIsRunning(true)
+
+        try {
+            if (!pyodideRef.current) {
+                pyodideRef.current = await window.loadPyodide();
+            }
+
+            const py = pyodideRef.current;
+
+            // Redirect stdout and stderr
+            py.setStdout({
+                batched: (str: string) => {
+                    setOutput((prev: string[]) => [...prev, str]);
+                }
+            });
+
+            py.setStderr({   
+                batched: (str: string) => {
+                    console.log(str); 
+                    setOutput(prev => [...prev, `[ERROR] ${str}`])
+                }
+            });
+
+            await py.runPythonAsync(code);
+
+        } catch (error) {
+            setOutput((prev: string[]) => [...prev, `${error}`]);
+        } finally {
+            setIsRunning(false);
+        }
+    }
 
     const handleCodeChange = ((value: string) => {
         setCode(value)
@@ -58,19 +101,6 @@ const CodeEditorClientComponent = ({ lessonId }: { lessonId: string}) => {
     }
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                handleSave();
-            }
-        }
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        }
-    }, [handleSave])
-
-    useEffect(() => {
         const timerId = setTimeout(() => {
             handleSave();
         }, 1000);
@@ -80,7 +110,7 @@ const CodeEditorClientComponent = ({ lessonId }: { lessonId: string}) => {
 
   return (
     <div className='flex flex-col w-full h-full'>
-      <Toolbar lessonId={lessonId} onDownload={handleDownload} onRename={handleRename} onClear={handleClear} />
+      <Toolbar onDownload={handleDownload} onRename={handleRename} onClear={handleClear} onRun={handleRunCode} isRunning={isRunning} />
       <Tabs lessonId={lessonId} />
       <RenameModal isOpen={isRenameModalOpen} onClose={() => setIsRenameModalOpen(false)} onRename={executeRename} currentName={currentLesson?.fileName || ""} />
       <Editor code={code} onChange={handleCodeChange} />

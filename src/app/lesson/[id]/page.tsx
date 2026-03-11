@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic';
 import GlobalAlert from '@/components/shared/GlobalAlertListener';
 
 // Dynamically import the entire layout wrapper
-const ResizableEditorLayout = dynamic(
-  () => import('@/components/editor/resizableCodeEditor'),
+const CodeComponentLayout = dynamic(
+  () => import('@/components/lesson/lessonComponent'),
   { 
     ssr: false,
     loading: () => <div className="h-screen w-full bg-[#1e1e1e] animate-pulse" /> 
@@ -21,7 +21,7 @@ export default function Page({ params }: PageProps) {
 
     return (
         <div className='w-full h-screen overflow-hidden'>
-            <ResizableEditorLayout lessonId={id} />
+            <CodeComponentLayout lessonId={id} />
             <GlobalAlert />
         </div>
     );

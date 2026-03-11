@@ -1,18 +1,22 @@
 "use client"
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import CodeEditorClientComponent from './codeEditorClientComponent';
+import CodeEditorClientComponent from './editorUI/codeEditorClientComponent';
 import { MessageSquare, Code2, Terminal } from "lucide-react";
+import ChatPane from "./chatUI/chatPane";
+import EditorPane, { Console } from "./editorUI/editorPane";
 
-interface ResizableEditorLayoutProps {
+interface CodeComponentLayoutProps {
   lessonId: string;
 }
 
-export default function ResizableEditorLayout({ lessonId }: ResizableEditorLayoutProps) {
+export default function CodeComponent({ lessonId }: CodeComponentLayoutProps) {
 
     const [activeTab, setActiveTab] = useState<'editor' | 'console' | 'chat'>('editor');
     const [isMobile, setIsMobile] = useState(false);
+
+    const [output, setOutput] = useState<string[]>(["System initialized..."])
 
     useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -22,35 +26,17 @@ export default function ResizableEditorLayout({ lessonId }: ResizableEditorLayou
   }, []);
 
     if (!isMobile){
+        console.log("Desktop Layout")
         return (
-    <Allotment>
-      {/* LEFT PANEL: Editor & Console */}
-      <Allotment.Pane minSize={300}>
-        <Allotment vertical>
-          <Allotment.Pane minSize={200}>
-             <CodeEditorClientComponent lessonId={lessonId} />
-          </Allotment.Pane>
-          
-          <Allotment.Pane preferredSize={200} minSize={100}>
-            <div className="h-full bg-[#1e1e1e] border-t border-[#2d2d2d] flex flex-col font-mono">
-              <div className="bg-[#252526] px-4 py-1 text-[10px] text-gray-400 uppercase font-bold">
-                Console Output
-              </div>
-              <div className="flex-1 p-4 text-sm text-green-400 overflow-y-auto">
-                {`> System initialized...`}
-              </div>
-            </div>
-          </Allotment.Pane>
-        </Allotment>
-      </Allotment.Pane>
-
-      {/* RIGHT PANEL: Chat */}
-      <Allotment.Pane preferredSize={400} minSize={200}>
-        <div className="h-full bg-[#21252b] p-4 text-white">
-          chat logic
+        <div className="h-screen w-full">
+          <Allotment className="h-full">
+            {/* LEFT PANEL: Editor & Console */}
+            <EditorPane output={output} lessonId={lessonId} setOutput={setOutput} />
+            {/* RIGHT PANEL: Chat */}
+            <ChatPane />
+          </Allotment>
         </div>
-      </Allotment.Pane>
-    </Allotment> );}
+      );}
 
     return (
     <div className="flex flex-col h-screen w-full bg-[#1e1e1e]">
@@ -58,13 +44,18 @@ export default function ResizableEditorLayout({ lessonId }: ResizableEditorLayou
       <main className="flex-1 overflow-hidden">
         {activeTab === "editor" ? (
           <div className="h-full flex flex-col">
-            <CodeEditorClientComponent lessonId={lessonId} />
-            {/* We could add a small collapsible terminal here too */}
+            <CodeEditorClientComponent lessonId={lessonId} setOutput={setOutput} />
           </div>
         ) : (
-          <div className="h-full bg-[#21252b] p-4 text-white">
-            chat logic
+          activeTab === "console" ? (
+            <div className="h-full flex flex-col  bg-[#21252b] p-4 text-white overflow-auto">
+              <Console output={output} setOutput={setOutput} />
+            </div>
+          ): (
+            <div className="h-full bg-[#21252b] p-4 text-white">
+              <ChatPane/>
           </div>
+          )
         )}
       </main>
 
@@ -77,6 +68,14 @@ export default function ResizableEditorLayout({ lessonId }: ResizableEditorLayou
           <Code2 size={20} />
           <span className="text-[10px] font-bold uppercase">Editor</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab("console")}
+          className={`flex flex-col items-center gap-1 transition-colors ${activeTab == "console" ? "text-blue-500": "text-gray-400"}`}
+          >
+            <Terminal size={20}/>
+            <span className="text-[10px] font-bold uppercase">Console</span>
+          </button>
         
         <button 
           onClick={() => setActiveTab("chat")}

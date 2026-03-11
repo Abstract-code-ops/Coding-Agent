@@ -167,3 +167,5 @@ dialog[open] {
     transform: translateY(-50%, -10px)
   }
 }
+
+/* Target the internal viewport of the Shadcn ScrollArea */

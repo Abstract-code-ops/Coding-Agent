@@ -1,15 +1,16 @@
-import { Button } from '../ui/button'
-import { Play, Brackets, Download } from 'lucide-react';
+import { Button } from '../../ui/button'
+import { Play, Brackets, Download, PauseOctagon } from 'lucide-react';
 import Link from 'next/link'
 
 interface ToolBarProps {
-  lessonId: string;
   onDownload: () => void;
   onRename: () => void;
   onClear: () => void;
+  onRun: () => void;
+  isRunning: boolean;
 }
 
-const ToolBar = ({ lessonId, onDownload, onClear, onRename }: ToolBarProps) => {
+const ToolBar = ({ onDownload, onClear, onRename, onRun, isRunning }: ToolBarProps) => {
   return (
     <div className='flex items-center justify-between pl-3 pr-4 py-2 text-sm text-white bg-[#21252b] border-b border-gray-900'>
       <div className="flex items-center gap-1">
@@ -56,8 +57,13 @@ const ToolBar = ({ lessonId, onDownload, onClear, onRename }: ToolBarProps) => {
           >
           Clear Code
         </Button>
-        <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer h-8'>
-          Run Code
+        <Button 
+          className='bg-transparent border border-green-600 rounded-md hover:bg-green-600
+           hover:text-white transition-colors cursor-pointer h-8'
+          onClick={onRun}
+          disabled={isRunning}
+        >
+          {isRunning ? "Running..." : "Run Code"}
         </Button>
       </div>
 
@@ -69,8 +75,10 @@ const ToolBar = ({ lessonId, onDownload, onClear, onRename }: ToolBarProps) => {
             onClick={onClear}>
           Clear Code
         </Button>
-        <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer h-8'>
-          <Play size={16} />
+        <Button className='bg-transparent border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors cursor-pointer h-8'
+          onClick={onRun}
+        >
+          {isRunning ? <PauseOctagon size={16} /> : <Play size={16} />}
         </Button>
       </div>
     </div>
